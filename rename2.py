@@ -11,8 +11,9 @@ def count_string(modified_filenames, count_str ):
     for i in range(len(modified_filenames)):
         new_filename = count_str
         for j in groups:
-            numbers = len(group[j]) # number of pound signs in string
-            new_filename = new_filename.replace ( group[j], ("%"+numbers+"d") %i )
+            numbers = len(j) # number of pound signs in string
+            new_filename = new_filename.replace ( j, ("%0"+str(numbers)+"d") %i, 1 )
+        modified_filenames[i] = new_filename
 
 def interactive(modified_filenames):
     for item in range(len(args.files)):
@@ -57,7 +58,7 @@ def main():
                         help='trim n chars from the start of each filename if n is positive, trim n chars from the end of each filename if n is negative')
     parser.add_argument('-r', nargs=2, metavar=('\"oldstring\"', '\"newstring\"'), type=str,
                         help='replace oldstring with newstring in filenames')
-    parser.add_argument('-n', metavar='\"countstring\"', type=int,
+    parser.add_argument('-n', metavar='\"countstring\"', type=str,
                         help='rename files in sequence using countstring')
     parser.add_argument('files', metavar='file', type=str, nargs='+',
                         help='list of files to operate on')
