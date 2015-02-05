@@ -33,10 +33,10 @@ def set_case(to_upper, filenames):
 
 def trimming( n, modified_filenames ):
     if n > 0:
-        for i in range(len(args.files)):
+        for i in range(len(modified_filenames)):
             modified_filenames[i] = modified_filenames[i][n:]
     else:
-        for i in range(len(args.files)):
+        for i in range(len(modified_filenames)):
             modified_filenames[i] = modified_filenames[i][:-n]
 
 def replace(filenames, oldstring, newstring):
@@ -77,21 +77,21 @@ def main():
     if args.u or args.l:
         set_case(args.u, modified_filenames)
 
+    #New stuff
+
+    if args.i:
+        interactive( modified_filenames )
+
+    if not args.t == None:
+        trimming( args.t, modified_filenames )
+
+    if args.n:
+        count_string(modified_filenames)
+
     if args.v:
         for i in range(len(args.files)):
             print('renaming', args.files[i], 'to', modified_filenames[i])
 
-    #New stuff
-            
-    if args.i:
-        interactive( modified_filenames )
-
-    if args.t:
-        trimming( args.t[0], modified_filenames )
-                
-    if args.n:
-        count_string(modified_filenames)
-            
     #end new stuff
 if __name__ == '__main__':
     main()
