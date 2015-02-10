@@ -31,6 +31,7 @@ import sys
 import os
 import os.path
 import argparse
+import glob
 import re
 '''=========================================================================='''
 
@@ -45,8 +46,8 @@ def count_string(modified_filenames, count_str, args):
         new_filename = count_str
         for j in groups:
             numbers = len(j) # number of pound signs in string
-            new_filename = new_filename.replace \
-                           ( j, ("%0"+str(numbers)+"d") %i, 1 )
+            new_filename = new_filename.replace(j,
+                ("%0"+str(numbers)+"d") %i, 1 )
         if args.v:
             print("Changing " + count_str + " to " + new_filename + "\n")
         modified_filenames[i] = new_filename
@@ -58,7 +59,7 @@ def count_string(modified_filenames, count_str, args):
 ============================================================================='''
 def interactive(modified_filenames, original_filenames):
     for item in range(len(modified_filenames)):
-        direct = input("Do you want to rename " + original_filenames[item] +\
+        direct = input("Do you want to rename " + original_filenames[item] +
                        " to " + modified_filenames[item] + "?\nYes or No: ")
         while not direct == "Yes" and not direct == "No":
             direct = input("Please enter a valid option of Yes or No\n").lower()
@@ -85,12 +86,12 @@ def set_case(to_upper, filenames, args):
     for i in range(len(filenames)):
         if to_upper:
             if args.v:
-                print("Changing " + filenames[i] + " to " + \
+                print("Changing " + filenames[i] + " to " +
                       filenames[i].upper() + "\n")
             filenames[i] = filenames[i].upper()
         else:
             if args.v:
-                print("Changing " + filenames[i] + " to " + \
+                print("Changing " + filenames[i] + " to " +
                       filenames[i].lower() + "\n")
             filenames[i] = filenames[i].lower()
 
@@ -99,17 +100,17 @@ def set_case(to_upper, filenames, args):
  Description:
  Parameters:
 ============================================================================='''
-def trimming( n, modified_filenames, args):
+def trimming(n, modified_filenames, args):
     if n > 0:
         for i in range(len(modified_filenames)):
             if args.v:
-                print("Trimming " + modified_filenames[i] + " to " + \
+                print("Trimming " + modified_filenames[i] + " to " +
                       modified_filenames[i][n:])
             modified_filenames[i] = modified_filenames[i][n:]
     else:
         for i in range(len(modified_filenames)):
             if args.v:
-                print("Trimming " + modified_filenames[i] + " to " + \
+                print("Trimming " + modified_filenames[i] + " to " +
                       modified_filenames[i][:n])
             modified_filenames[i] = modified_filenames[i][:n]
 
@@ -136,7 +137,7 @@ def main():
                         help='trim n chars from the start of each filename \
                         if n is positive, trim n chars from the end of each \
                         filename if n is negative')
-    parser.add_argument('-r', nargs=2, metavar=('\"oldstring\"', \
+    parser.add_argument('-r', nargs=2, metavar=('\"oldstring\"',
                                                 '\"newstring\"'), type=str,
                         help='replace oldstring with newstring in filenames')
     parser.add_argument('-n', metavar='\"countstring\"', type=str,
@@ -144,6 +145,12 @@ def main():
     parser.add_argument('files', metavar='file', type=str, nargs='+',
                         help='list of files to operate on')
     args = parser.parse_args()
+
+    i = 0
+    while i < len(args.files):
+        files = glob.glob(args.files[i])
+        args.files[i:i+1] = files
+        i += len(files)
 
     # make sure all files given exist
     for f in args.files:
@@ -156,26 +163,22 @@ def main():
     # process arguments in the order they are specified
     for i in sys.argv:
         if i == "-r":
-            replace(modified_filenames, args.r[0], args.r[1])
+            replace(modified_filenames, args.r[0], args.r[1], args)
         elif i == "-u" or i == "-l":
-            set_case(args.u, modified_filenames)
+            set_case(args.u, modified_filenames, args)
         elif i == "-t":
-            trimming( args.t, modified_filenames )
+            trimming(args.t, modified_filenames, args)
         elif i == "-n":
-            count_string(modified_filenames, args.n)
-        else:
-            print("Invalid argument provided, " + i + " is not viable.\n")
+            count_string(modified_filenames, args.n, args)
+        #else:
+            #print("Invalid argument provided, " + i + " is not viable.\n")
             #call help function, quit also?
-            
-            
-            
-    #we should remove this if other checks work properly
-    if args.v:
-        for i in range(len(args.files)):
-            print('renaming', args.files[i], 'to', modified_filenames[i])
 
     if args.i:
-        interactive( modified_filenames, args.files )
+        interactive(modified_filenames, args.files)
+
+    for i in range(len(args.files)):
+        os.rename(args.files[i], modified_filenames[i])
 
 if __name__ == '__main__':
     main()
