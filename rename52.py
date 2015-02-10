@@ -64,8 +64,8 @@ def count_string(modified_filenames, count_str, verbose):
         modified_filenames[i] = new_filename
 
 
-def interactive(modified_filenames, original_filenames):
-    '''Requests user confirmation of actions.
+def rename_files(modified_filenames, original_filenames, interactive):
+    '''Renames all files and requests user confirmation of actions if in interactive mode.
 
     Description:
       Interactive mode will request the user to confirm or deny all changes
@@ -81,12 +81,16 @@ def interactive(modified_filenames, original_filenames):
       None
     '''
     for item in range(len(modified_filenames)):
-        direct = input("Do you want to rename " + original_filenames[item] +
-                       " to " + modified_filenames[item] + "?\nYes or No: ")
-        while not direct == "Yes" and not direct == "No":
-            direct = input("Please enter a valid option of Yes or No\n").lower()
-        if direct == "no":
-            modified_filenames[item] = original_filenames[item]
+        if interactive:
+            direct = input("Do you want to rename " + original_filenames[item] +
+                           " to " + modified_filenames[item] + "?\nYes or No: ").lower()
+            while not direct == "yes" and not direct == "no":
+                direct = input("Please enter a valid option of Yes or No\n").lower()
+            if direct == "yes":
+                os.rename(original_filenames[item], modified_filenames[item])
+        else:
+            os.rename(original_filenames[item], modified_filenames[item])
+                
 
 def replace(filenames, oldstring, newstring, verbose):
     '''Replaces filenames with specified altered versions.
@@ -128,7 +132,7 @@ def set_case(to_upper, filenames, verbose):
     '''
     for i in range(len(filenames)):
         if to_upper:
-            if args.v:
+            if verbose:
                 print("Changing " + filenames[i] + " to " +
                       filenames[i].upper() + "\n")
             filenames[i] = filenames[i].upper()
@@ -209,6 +213,7 @@ def main():
     args = parser.parse_args()
 
     i = 0
+    # expand any wild cards in filenames
     while i < len(args.files):
         files = glob.glob(args.files[i])
         args.files[i:i+1] = files
@@ -233,11 +238,7 @@ def main():
         elif i == "-n":
             count_string(modified_filenames, args.n, args.v)
 
-    if args.i:
-        interactive(modified_filenames, args.files)
-
-    for i in range(len(args.files)):
-        os.rename(args.files[i], modified_filenames[i])
+    rename_files(modified_filenames, args.files, args.i)
 
 if __name__ == '__main__':
     main()
